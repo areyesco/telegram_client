@@ -240,4 +240,6 @@ ArmandoRGtz.session-journal
 ## CONFIG FILE DO NOT COMMIT ##
 config.py
 
+/investigation
+
 # End of https://www.toptal.com/developers/gitignore/api/windows,python,venv,visualstudiocode
