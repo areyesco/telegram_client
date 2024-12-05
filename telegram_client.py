@@ -18,10 +18,11 @@ async def handler(event):
     chat_id = event.chat.id
 
     if chat_id in chat_ids_to_read:
-        await utils.log_message(utils.Log_Level.INFO, f"debug: telegram_client: chat_id: {chat_id}")
+        await utils.log_message(utils.Log_Level.INFO, "----------------------------------------------------")
+        await utils.log_message(utils.Log_Level.INFO, f"telegram_client: chat_id: {chat_id}")
         await utils.log_message(f"debug: telegram_client: event: {event}")
         msg = utils.normilize_message(event)
-        await utils.log_message(utils.Log_Level.INFO, f"info: telegram_client: event.message.message: {msg}")
+        await utils.log_message(utils.Log_Level.INFO, f"telegram_client: event.message.message: {msg}")
         await process_message(str(msg))  # Await the asynchronous function
         await send_message_data_signal_to_me(msg, utils.MessageType.TXT)
 

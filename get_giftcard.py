@@ -21,7 +21,6 @@ async def process_message(message):
     Parameters:
     message (str): The message text to be processed.
     """
-    await utils.log_message(utils.Log_Level.INFO, "-----------------------------------------------------------------------")
     await utils.log_message("debug-> process_message: init")
 
     # List of initial keywords to identify in the message
@@ -64,9 +63,9 @@ async def process_message(message):
             # Process the links asynchronously
             await process_links_async(unique_links, content_keywords)
         else:
-            await utils.log_message(utils.Log_Level.INFO, "The message does not contain more than 5 links.")
+            await utils.log_message(utils.Log_Level.INFO, "\tThe message does not contain more than 5 links.")
     else:
-        await utils.log_message(utils.Log_Level.INFO, "No specified keywords found in the message.")
+        await utils.log_message(utils.Log_Level.INFO, "\tNo specified keywords found in the message.")
     await utils.log_message("debug-> end process_message")
 
 async def process_links_async(links, content_keywords):
@@ -77,6 +76,7 @@ async def process_links_async(links, content_keywords):
     async with aiohttp.ClientSession() as session:
         tasks = []
         for link in links:
+            await utils.log_message(utils.Log_Level.INFO, "\t\tLink:", str(link))
             await utils.log_message("debug-> process_links_async: link:", str(link))
             tasks.append(fetch_and_check_link(session, link, content_keywords, semaphore))
         await asyncio.gather(*tasks)
@@ -109,7 +109,7 @@ async def fetch_and_check_link(session, link, content_keywords, semaphore):
                     # Check if any of the content keywords are present
                     if any(keyword.lower() in page_content_lower for keyword in content_keywords):
                         # Open the link in the default web browser
-                        await utils.log_message("debug-> fetch_and_check_link: open browser link:", str(link))
+                        await utils.log_message(utils.Log_Level.INFO, "\t\tOpen browser link:" + str(link) + " - Title:" + str(title) )
                         webbrowser.open(link)
                 else:
                     await utils.log_message(utils.Log_Level.INFO, f"Error fetching {link}: HTTP status {response.status}")

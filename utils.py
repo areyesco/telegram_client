@@ -25,7 +25,7 @@ async def log_message(log_level=Log_Level.DEBUG, *args):
     
     if bprint:
         message = " ".join(map(str, args))
-        print(message)
+        print(format_datetime() + " - " + str(log_level)+": " + message)
 
 
 """
@@ -41,6 +41,18 @@ def timeStampBinanceToString(timestamp, dtFormat="%Y/%m/%d %H:%M:%S.%f"):
 
 def timeStampBinanceToTimeString(timestamp, dtFormat="%d %H hrs"):
     return timeStampToString(timestamp/1000, dtFormat)
+
+def format_datetime(dt=None, date_format="%Y/%m/%d %H:%M:%S.%f"):
+    """
+    Convierte un objeto datetime en una cadena con el formato especificado.
+
+    :param date_obj: Objeto datetime que se desea formatear.
+    :param date_format: Formato de la fecha en formato strftime. Por defecto, "%Y-%m-%d".
+    :return: Cadena con la fecha formateada.
+    """
+    if dt is None:
+        dt = datetime.now()
+    return dt.strftime(date_format)
 
 def normilize_message(event):
     msg1 = event.message.text
