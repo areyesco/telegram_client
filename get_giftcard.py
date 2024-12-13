@@ -22,7 +22,7 @@ async def process_message(message):
     message (str): The message text to be processed.
     """
     await utils.log_message("debug-> process_message: init")
-
+    item_found = False
     # List of initial keywords to identify in the message
     initial_keywords = config.INITIAL_KEYWORDS
 
@@ -61,28 +61,39 @@ async def process_message(message):
             await utils.log_message(utils.Log_Level.INFO, "debug-> unique_links:", str(unique_links))
 
             # Process the links asynchronously
-            await process_links_async(unique_links, content_keywords)
+            item_found = await process_links_async(unique_links, content_keywords)
         else:
             await utils.log_message(utils.Log_Level.INFO, "\tThe message does not contain more than 5 links.")
     else:
         await utils.log_message(utils.Log_Level.INFO, "\tNo specified keywords found in the message.")
-    await utils.log_message("debug-> end process_message")
+    await utils.log_message("debug-> end process_message, item_found:", str(item_found))
+    return item_found
 
 async def process_links_async(links, content_keywords):
-    # Limit the number of concurrent requests to avoid overwhelming the system
+    # Limit the number de peticiones concurrentes
+    item_found = False
     await utils.log_message("debug-> process_links_async: init")
-    semaphore = asyncio.Semaphore(10)  # Adjust the number as needed
+    semaphore = asyncio.Semaphore(10)  # Ajustar si se necesita
 
     async with aiohttp.ClientSession() as session:
         tasks = []
         for link in links:
             await utils.log_message(utils.Log_Level.INFO, "\t\tLink:", str(link))
             await utils.log_message("debug-> process_links_async: link:", str(link))
+            # Agregamos la coroutine a la lista de tareas
             tasks.append(fetch_and_check_link(session, link, content_keywords, semaphore))
-        await asyncio.gather(*tasks)
-    print("debug-> process_links_async: end")
+
+        # Esperar a que todas las tareas se completen
+        results = await asyncio.gather(*tasks)
+
+        # Si cualquiera de las tareas retorna True, entonces item_found es True
+        item_found = any(results)
+
+    print("debug-> process_links_async: end, item_found:", str(item_found))
+    return item_found
 
 async def fetch_and_check_link(session, link, content_keywords, semaphore):
+    item_found = False
     await utils.log_message("debug-> fetch_and_check_link: init")
     async with semaphore:
         try:
@@ -109,10 +120,13 @@ async def fetch_and_check_link(session, link, content_keywords, semaphore):
                     # Check if any of the content keywords are present
                     if any(keyword.lower() in page_content_lower for keyword in content_keywords):
                         # Open the link in the default web browser
+                        item_found = True
                         await utils.log_message(utils.Log_Level.INFO, "\t\tOpen browser link:" + str(link) + " - Title:" + str(title) )
                         webbrowser.open(link)
                 else:
                     await utils.log_message(utils.Log_Level.INFO, f"Error fetching {link}: HTTP status {response.status}")
         except Exception as e:
             await utils.log_message(f"Error fetching {link}: {e}")
+    
     await utils.log_message("debug-> fetch_and_check_link: end")
+    return item_found

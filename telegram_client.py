@@ -23,8 +23,12 @@ async def handler(event):
         await utils.log_message(f"debug: telegram_client: event: {event}")
         msg = utils.normilize_message(event)
         await utils.log_message(utils.Log_Level.INFO, f"telegram_client: event.message.message: {msg}")
-        await process_message(str(msg))  # Await the asynchronous function
-        await send_message_data_signal_to_me(msg, utils.MessageType.TXT)
+        forward_msg = await process_message(str(msg))  # Await the asynchronous function
+        if forward_msg:
+            print("forward_msg:", str(forward_msg))
+            await send_message_data_signal_to_me(msg, utils.MessageType.TXT)
+        else:
+            print("Message not forwarded")
 
 async def send_message_data_signal_to_me(msg_signal, message_type=None):
     """
